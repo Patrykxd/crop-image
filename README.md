@@ -1,6 +1,6 @@
 # crop-image - Patryk Pawlicki 06-09-2017
 
-## przykład
+przykład 
 ```
 
 <div id="images-area" style="z-index:99;">
@@ -11,7 +11,7 @@
 
 <script>
     $(document).ready(function () {
-		// podajemy szerokosc i wysokosc wyninanego obszaru
+		// podajemy szerokosc i wysokosc wycinanego obszaru
         crop.popup('images-area', {width: 250, height: 100});
                 
     });
