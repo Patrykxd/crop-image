@@ -13,7 +13,7 @@
     $(document).ready(function () {
 		// podajemy szerokosc i wysokosc wyninanego obszaru
         crop.popup('images-area', {width: 250, height: 100});
-                
+        console.log(crop.crop()); 
     });
 </script>
 
