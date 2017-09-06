@@ -17,8 +17,10 @@ var ciach = {
     startY: 0,
     event: false,
     element: false,
+    name: null,
     popup: function (name, param, method) {
-        ciach.element = document.getElementById(name);
+        ciach.name = name;
+        ciach.element = document.getElementById(ciach.name);
         ciach.element.onclick = function () {
             if (document.getElementById('crop-area') === null) {
                 ciach.set(param);
@@ -49,7 +51,7 @@ var ciach = {
         document.getElementById('new').appendChild(ciach.canvascut('img', ciach.left, ciach.top, ciach.width, ciach.height));
     },
     canvascut: function (img, x, y, w, h) {
-        var image = document.querySelector('#images-area > img');
+        var image = document.querySelector('#' + ciach.name + ' > img');
         var element = document.createElement("canvas");
         var newimage = document.createElement("img");
         var convert = element.getContext("2d");
@@ -168,16 +170,19 @@ var ciach = {
         ciach.element.style.height = document.querySelector('#images-area > img').naturalHeight + 'px';
         ciach.element.insertAdjacentHTML('beforeend', select_area);
 
+        ciach.el = document.getElementById('crop-area');
+
         for (i in mystyle) {
             ciach[i] = mystyle[i];
-            document.getElementById('crop-area').style[i] = (i == 'width' || i == 'height') ? mystyle[i] + 'px' : mystyle[i];
+            ciach.el.style[i] = (i == 'width' || i == 'height') ? mystyle[i] + 'px' : mystyle[i];
         }
-        document.getElementById('crop-area').style.top = '50%';
-        document.getElementById('crop-area').style.left = '50%';
 
-        ciach.el = document.getElementById('crop-area');
+        ciach.el.style.top = '50%';
+        ciach.el.style.left = '50%';
+
         ciach.res = document.getElementById('rb');
         document.getElementById('size').innerHTML = ciach.width + 'x' + ciach.height;
+
         ciach.top = ciach.el.offsetTop - (ciach.height * 0.5);
         ciach.left = ciach.el.offsetLeft - (ciach.width * 0.5);
     },
