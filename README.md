@@ -16,7 +16,7 @@
                         url: '/index.php',
                         method: 'POST',
                         data: d = crop.crop(),
-
+ 
                     }).done(function () {
                         alert('wycieto');
                     });

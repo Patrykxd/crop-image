@@ -1,4 +1,4 @@
-/* 
+/*  
 	croper.js
     Created on : 2017-08-25, 18:57:46
     Author     : Patryk
