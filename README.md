@@ -11,10 +11,29 @@
 
 <script>
     $(document).ready(function () {
-		// podajemy szerokosc i wysokosc wyninanego obszaru
-        crop.popup('images-area', {width: 250, height: 100});
-        console.log(crop.crop()); 
-    });
+                crop.popup('images-area', {width: 250, height: 100}, '4:3', function () {
+                    $.ajax({
+                        url: '/index.php',
+                        method: 'POST',
+                        data: d = crop.crop(),
+
+                    }).done(function () {
+                        alert('wycieto');
+                    });
+                });                
+            });
 </script>
+
+//przykładowe wycinanie
+
+<?php
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $report = 0;
+            $output = 0;
+            exec("convert -crop " . $_POST['width'] . "x" . $_POST['height'] . "+" . $_POST['x'] . "+" . $_POST['y'] . " images/Screenshot_2.png images/test.png", $output, $report);
+            
+            exit;
+        }
+        ?>
 
 ```

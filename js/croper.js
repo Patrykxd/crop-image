@@ -1,8 +1,8 @@
-/**
- * croper.js
- * 
- */
-
+/* 
+	croper.js
+    Created on : 2017-08-25, 18:57:46
+    Author     : Patryk
+*/
 
 var crop = {
     top: null,
@@ -18,23 +18,32 @@ var crop = {
     event: false,
     element: false,
     name: null,
-    popup: function (name, param, method) {
+    size: {'free': false, '1:1': 1, '4:3': 0.75, '16:9': 0.5625, '2:3': 1.5},
+    popup: function (name, param, size, func) {
+//        var aspecto = {'free': false, '1:1': 1, '4:3': 0.75, '16:9': 0.5625, '2:3': 1.5};
+        crop.size = crop.size[size];
         crop.name = name;
+
         crop.element = document.getElementById(crop.name);
         crop.element.onclick = function () {
             if (document.getElementById('crop-area') === null) {
                 crop.set(param);
                 crop.init();
 
-
-                crop.element.insertAdjacentHTML('beforeend', '<button id="cro">kadruj</button>');
+                var crop_button = document.createElement('button');
+                crop_button.id = 'cro';
+                crop_button.innerHTML = 'kadruj';
+                crop_button.onclick = func;
+                
                 document.getElementById('crop-background').className = 'max';
                 document.getElementById('crop-background').appendChild(crop.element);
+                document.getElementById('crop-background').appendChild(crop_button);
             }
 
 
 
         }
+        return func;
     },
     crop: function () {
         var post_data = {
@@ -112,10 +121,11 @@ var crop = {
                 crop.left = (crop.left == null) ? crop.x : crop.left;
 
                 crop.width += e.movementX;
-                crop.height += e.movementY;
+                crop.height += (crop.size != false) ? (e.movementX * crop.size) : e.movementY;
+
                 document.getElementById('size').innerHTML = crop.width + 'x' + crop.height;
                 crop.el.style.width = crop.width + 'px';
-                crop.el.style.height = crop.height + 'px';
+                crop.el.style.height = (crop.size != false) ? (crop.width * crop.size) + 'px' : crop.height + 'px';
                 console.log(e);
             }
         }, false);
@@ -172,10 +182,13 @@ var crop = {
 
         crop.el = document.getElementById('crop-area');
 
-        for (i in mystyle) {
-            crop[i] = mystyle[i];
-            crop.el.style[i] = (i == 'width' || i == 'height') ? mystyle[i] + 'px' : mystyle[i];
-        }
+        console.log(crop.size);
+        crop.width = mystyle['width'];
+        crop.height = (crop.size != false) ? (mystyle['width'] * crop.size) : mystyle['height'];
+
+        crop.el.style.width = mystyle['width'] + 'px';
+        crop.el.style.height = (crop.size != false) ? (crop.width * crop.size) + 'px' : mystyle['height'] + 'px';
+
 
         crop.el.style.top = '50%';
         crop.el.style.left = '50%';

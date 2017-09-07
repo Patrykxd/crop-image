@@ -17,6 +17,9 @@ and open the template in the editor.
     left: 0;
     top: 0;
     bottom: 0;
+    overflow: scroll;
+    max-width: 80vw;
+    max-height: 80vh;
 }
 
 .max {
