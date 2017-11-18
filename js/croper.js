@@ -1,202 +1,204 @@
-/*  
-	croper.js
-    Created on : 2017-08-25, 18:57:46
-    Author     : Patryk
-*/
-
-var crop = {
-    top: null,
-    left: null,
-    width: 100,
-    height: 50,
+var CROP = {
+    width: null,
+    height: null,
+    src: null,
+    b_element: null,
+    event: null,
+    crop: null,
+    element: null,
     offsetTop: null,
     offsetLeft: null,
-    x: 0,
-    y: 0,
-    startX: 0,
-    startY: 0,
-    event: false,
-    element: false,
-    name: null,
-    size: {'free': false, '1:1': 1, '4:3': 0.75, '16:9': 0.5625, '2:3': 1.5},
-    popup: function (name, param, size, func) {
-//        var aspecto = {'free': false, '1:1': 1, '4:3': 0.75, '16:9': 0.5625, '2:3': 1.5};
-        crop.size = crop.size[size];
-        crop.name = name;
+    top: 0,
+    left: 0,
+    startX: null,
+    startY: null,
+    maxX: null,
+    maxY: null,
+    result: function () {
+        return {
+            top: CROP.top,
+            left: CROP.left,
+            width: CROP.width,
+            height: CROP.height,
+            image: CROP.src
+        }
+    },
+    background: function () {
+        var background = document.createElement('DIV');
+        background.id = 'crop-background';
 
-        crop.element = document.getElementById(crop.name);
-        crop.element.onclick = function () {
-            if (document.getElementById('crop-area') === null) {
-                crop.set(param);
-                crop.init();
+        this.b_element = background;
+        document.body.appendChild(background);
 
-                var crop_button = document.createElement('button');
-                crop_button.id = 'cro';
-                crop_button.innerHTML = 'kadruj';
-                crop_button.onclick = func;
-                
-                document.getElementById('crop-background').className = 'max';
-                document.getElementById('crop-background').appendChild(crop.element);
-                document.getElementById('crop-background').appendChild(crop_button);
+        background.onmousedown = function (e) {
+            e.stopPropagation();
+            if (e.target.id == 'crop-background') {
+                this.outerHTML = '';
+                CROP.crop = null;
             }
+        }
+    },
+    area: function (w, h, func) {
+        this.background();
+        var div_area = document.createElement('DIV');
 
+        var button = document.createElement('BUTTON');
+        button.innerHTML = 'kadruj';
+        button.onclick = func;
 
+        var area = document.createElement('IMG');
+        area.src = this.src;
+
+        div_area.appendChild(area);
+
+        area.onload = function () {
+            var maxS = window.innerWidth + window.innerHeight;
+            var S = area.width + area.height;
+
+            if (maxS < S) {
+                div_area.style['max-width'] = '80vw';
+                div_area.style['max-height'] = '80vh';
+                div_area.style['overflow'] = 'auto';
+            }
+            div_area.style['position'] = "absolute";
+            div_area.style['z-index'] = 1000;
+            div_area.style['width'] = area.width + 'px';
+            div_area.style['height'] = area.height + 'px';
+            CROP.maxX = area.width;
+            CROP.maxY = area.height;
+            div_area.style['top'] = 0;
+            div_area.style['bottom'] = 0;
+            div_area.style['left'] = 0;
+            div_area.style['right'] = 0;
+            div_area.style['margin'] = "auto";
+            div_area.style['box-shadow'] = "1px 1px 2px rgba(0, 0, 0, 0.54)";
 
         }
-        return func;
-    },
-    crop: function () {
-        var post_data = {
-            x: crop.left,
-            y: crop.top,
-            width: crop.width,
-            height: crop.height,
-        }
 
-        return post_data;
-    },
-    makecrop: function () {
-        document.getElementById('new').innerHTML = "";
-        document.getElementById('new').appendChild(crop.canvascut('img', crop.left, crop.top, crop.width, crop.height));
-    },
-    canvascut: function (img, x, y, w, h) {
-        var image = document.querySelector('#' + crop.name + ' > img');
-        var element = document.createElement("canvas");
-        var newimage = document.createElement("img");
-        var convert = element.getContext("2d");
+        this.click(div_area, w, h);
 
-        element.width = w;
-        element.height = h;
+        this.b_element.insertAdjacentElement('beforeEnd', button);
 
-        convert.drawImage(image, x, y, w, h, 0, 0, w, h);
-        newimage.src = element.toDataURL("image/png");
-        document.getElementById("new").href = element.toDataURL("image/png").replace(/^data:image\/[^;]/, 'data:application/octet-stream');
-        document.getElementById("new").download = 'crop_test.png';
-        return newimage;
-        ;
+        this.b_element.insertAdjacentElement('beforeEnd', div_area);
+
+    },
+    inicialize: function (src, w, h, f) {
+        CROP.src = src;
+        CROP.area(w, h, f);
+        document.addEventListener('mouseup', function () {
+            CROP.event = false;
+        }, true);
     },
     init: function () {
+        var d = document;
 
-        crop.el.addEventListener('mousedown', function (e) {
-            crop.event = 'move';
+        CROP.crop.addEventListener('mousedown', function (e) {
 
-            crop.offsetLeft = crop.el.offsetLeft - e.clientX;
-            crop.offsetTop = crop.el.offsetTop - e.clientY;
-            crop.move();
+            CROP.event = 'move';
+            CROP.offsetLeft = e.target.offsetLeft - e.clientX;
+            CROP.offsetTop = e.target.offsetTop - e.clientY;
 
-        }, true);
-
-        crop.res.addEventListener('mousedown', function (e) {
-            crop.event = 'resize';
-
-            crop.offsetLeft = crop.el.offsetLeft - e.clientX;
-            crop.offsetTop = crop.el.offsetTop - e.clientY;
-            crop.resize();
-
-        }, true);
-
-        document.addEventListener('mouseup', function () {
-            crop.event = false;
-        }, true);
-
-    },
-    resize: function (e) {
-        /**
-         * 
-         * @param {type} e
-         * @returns {undefined}
-         * zmiana rozmiaru select area
-         */
-        document.addEventListener('mousemove', function (e) {
-            e.preventDefault();
-            if (crop.event == 'resize') {
-
-                var x = e.clientX;
-                var y = e.clientY;
-
-                crop.y = (y + crop.offsetTop) - crop.height * 0.5;
-                crop.x = (x + crop.offsetLeft) - crop.width * 0.5;
-
-                crop.top = (crop.top == null) ? crop.y : crop.top;
-                crop.left = (crop.left == null) ? crop.x : crop.left;
-
-                crop.width += e.movementX;
-                crop.height += (crop.size != false) ? (e.movementX * crop.size) : e.movementY;
-
-                document.getElementById('size').innerHTML = crop.width + 'x' + crop.height;
-                crop.el.style.width = crop.width + 'px';
-                crop.el.style.height = (crop.size != false) ? (crop.width * crop.size) + 'px' : crop.height + 'px';
-                console.log(e);
-            }
+            CROP.move();
         }, false);
+
+        d.querySelector('.rb').addEventListener('mousedown', function (e) {
+            e.stopPropagation();
+            CROP.event = 'resize';
+            CROP.offsetLeft = e.target.offsetLeft - e.clientX;
+            CROP.offsetTop = e.target.offsetTop - e.clientY;
+
+            CROP.startX = e.clientX;
+            CROP.startY = e.clientY;
+
+            CROP.resize();
+        }, false);
+
     },
     move: function () {
-        /**
-         * 
-         * @param {type} event
-         * @returns {undefined}
-         * poruszanie select_area
-         */
-        crop.el.addEventListener('mousemove', function (e) {
-            e.preventDefault();
-            if (crop.event == 'move') {
 
-                var x = e.clientX;
-                var y = e.clientY;
+        document.addEventListener('mousemove', function (e) {
 
-                crop.y = (y + crop.offsetTop);
-                crop.x = (x + crop.offsetLeft);
+            if (CROP.event == 'move') {
 
-                crop.left = crop.x - (crop.width * 0.5);
-                crop.top = crop.y - (crop.height * 0.5);
+                CROP.left = e.clientX + CROP.offsetLeft;
+                CROP.top = e.clientY + CROP.offsetTop;
 
-                crop.el.style.left = crop.x + 'px';
-                crop.el.style.top = crop.y + 'px';
+                CROP.left = CROP.left > 0 ? CROP.left : 0;
+                CROP.top = CROP.top > 0 ? CROP.top : 0;
 
-                console.log(e);
+                CROP.left = CROP.left + CROP.width < CROP.maxX ? CROP.left : CROP.maxX - CROP.width;
+                CROP.top = CROP.top + CROP.height < CROP.maxY ? CROP.top : CROP.maxY - CROP.height;
 
+
+                CROP.crop.style.left = CROP.left + 'px';
+                CROP.crop.style.top = CROP.top + 'px';
             }
         }, false);
 
     },
-    set: function (mystyle) {
-        /**
-         * 
-         * @type Array tablica styli
-         * select_area obszar wycięcia 
-         */
+    resize: function () {
 
+        document.addEventListener('mousemove', function (e) {
+            if (CROP.event == 'resize') {
 
-        var select_area = '<div id="crop-area" draggable="true">' +
-                '<a class="crop-resize lt" ></a>' +
-                '<a class="crop-resize rt" ></a>' +
-                '<a class="crop-resize lb" ></a>' +
-                '<a class="crop-resize rb" id="rb"></a>' +
-                '<div id="size"></div>' +
-                '<span class="crop-height"></span>' +
-                '<span class="crop-width"></span>' +
-                '</div>';
-        crop.element.style.width = document.querySelector('#images-area > img').naturalWidth + 'px';
-        crop.element.style.height = document.querySelector('#images-area > img').naturalHeight + 'px';
-        crop.element.insertAdjacentHTML('beforeend', select_area);
+                var x = e.clientX - CROP.startX;
+                CROP.startX = e.clientX;
 
-        crop.el = document.getElementById('crop-area');
+                var y = e.clientY - CROP.startY;
+                CROP.startY = e.clientY;
 
-        console.log(crop.size);
-        crop.width = mystyle['width'];
-        crop.height = (crop.size != false) ? (mystyle['width'] * crop.size) : mystyle['height'];
+                CROP.width = (CROP.width + x) + CROP.left <= CROP.maxX ? CROP.width + x : CROP.width;
+                CROP.height = (CROP.height + y) + CROP.top <= CROP.maxY ? CROP.height + y : CROP.height;
 
-        crop.el.style.width = mystyle['width'] + 'px';
-        crop.el.style.height = (crop.size != false) ? (crop.width * crop.size) + 'px' : mystyle['height'] + 'px';
+                CROP.crop.style.width = CROP.width + 'px';
+                CROP.crop.style.height = CROP.height + 'px';
+            }
+        }, false);
 
-
-        crop.el.style.top = '50%';
-        crop.el.style.left = '50%';
-
-        crop.res = document.getElementById('rb');
-        document.getElementById('size').innerHTML = crop.width + 'x' + crop.height;
-
-        crop.top = crop.el.offsetTop - (crop.height * 0.5);
-        crop.left = crop.el.offsetLeft - (crop.width * 0.5);
     },
+    click: function (element, w, h) {
+        element.querySelector('img').onclick = function (e) {
+            e.stopPropagation();
+
+            var d = document;
+
+            if (CROP.crop == null) {
+                var crop_area = d.createElement('DIV');
+                crop_area.id = "crop-area";
+
+                var lt = d.createElement('a');
+                lt.className = "crop-resize lt";
+                var rt = d.createElement('a');
+                rt.className = "crop-resize rt";
+                var lb = d.createElement('a');
+                lb.className = "crop-resize lb";
+                var rb = d.createElement('a');
+                rb.className = "crop-resize rb";
+
+                crop_area.insertAdjacentElement('beforeEnd', rb);
+                crop_area.insertAdjacentElement('beforeEnd', lb);
+                crop_area.insertAdjacentElement('beforeEnd', rt);
+                crop_area.insertAdjacentElement('beforeEnd', lt);
+
+                crop_area.style['width'] = w + 'px';
+                crop_area.style['height'] = h + 'px';
+
+                crop_area.style['top'] = 'calc(50% - ' + (h * 0.5) + 'px)';
+                crop_area.style['left'] = 'calc(50% - ' + (w * 0.5) + 'px)';
+
+
+                CROP.crop = crop_area;
+                element.insertAdjacentElement('beforeEnd', crop_area);
+
+                CROP.top = crop_area.offsetTop;
+                CROP.left = crop_area.offsetLeft;
+                CROP.width = w;
+                CROP.height = h;
+
+                CROP.init();
+            }
+
+        }
+
+    }
 }
