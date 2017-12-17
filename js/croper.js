@@ -50,6 +50,7 @@ var CROP = {
         area.src = this.src;
 
         div_area.appendChild(area);
+        div_area.appendChild(button);
 
         area.onload = function () {
             var maxS = window.innerWidth + window.innerHeight;
@@ -76,8 +77,6 @@ var CROP = {
         }
 
         this.click(div_area, w, h);
-
-        this.b_element.insertAdjacentElement('beforeEnd', button);
 
         this.b_element.insertAdjacentElement('beforeEnd', div_area);
 
